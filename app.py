@@ -1,120 +1,4 @@
-def main():
-    # Interface principale ultra-épurée
-    st.markdown('<div class="main-interface">', unsafe_allow_html=True)
-    
-    # Logo et tagline
-    st.markdown("""
-    <div class="logo">VIDMIND</div>
-    <div class="tagline">L'intelligence de votre créativité</div>
-    """, unsafe_allow_html=True)
-    
-    # Initialisation des states
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    if "selected_video" not in st.session_state:
-        st.session_state.selected_video = "Général"
-    if "show_upload" not in st.session_state:
-        st.session_state.show_upload = False
-    
-    videos = load_videos()
-    
-    # Sélecteur de vidéo épuré avec miniatures
-    st.markdown("""
-    <div class="video-selector">
-        <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">
-            Contexte de conversation
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Pills de sélection vidéo avec miniatures
-    cols = st.columns(len(videos))
-    for i, video in enumerate(videos):
-        with cols[i]:
-            is_active = st.session_state.selected_video == video["title"]
-            pill_class = "video-pill active" if is_active else "video-pill"
-            
-            if st.button(
-                video["short"], 
-                key=f"video_{video['id']}",
-                help=video["title"]
-            ):
-                st.session_state.selected_video = video["title"]
-                # Ajouter message de contexte
-                st.session_state.messages.append({
-                    "role": "system",
-                    "content": f"Contexte changé vers : {video['title']}"
-                })
-    
-    # Options étendues pour les créateurs
-    st.markdown('<div class="options-section">', unsafe_allow_html=True)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        if st.button("📁 Importer fichier", key="import_file"):
-            st.session_state.show_upload = not st.session_state.show_upload
-    
-    with col2:
-        if st.button("📊 Analytics", key="analytics"):
-            st.info("📈 Analytics détaillées bientôt disponibles")
-    
-    with col3:
-        if st.button("🎯 Suggestions", key="suggestions"):
-            # Ajouter suggestions automatiques
-            suggestions_text = "🎯 Suggestions pour améliorer votre contenu :\n• Plus d'exemples pratiques\n• Créer une série sur TypeScript\n• Répondre aux questions en attente"
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": suggestions_text
-            })
-            st.experimental_rerun()
-    
-    with col4:
-        if st.button("💡 Insights", key="insights"):
-            # Ajouter insights automatiques
-            insights_text = "💡 Insights de votre audience :\n• Niveau technique : Intermédiaire-Avancé (67%)\n• Plateforme préférée : Desktop (78%)\n• Moment d'activité : 18h-22h\n• Sujets demandés : TypeScript, Testing, DevOps"
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": insights_text
-            })
-            st.experimental_rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Zone d'upload conditionnelle
-    if st.session_state.show_upload:
-        st.markdown("""
-        <div class="upload-zone active">
-            <div class="upload-icon">📤</div>
-            <div class="upload-text">Glissez vos fichiers ici ou cliquez pour sélectionner</div>
-            <div class="upload-subtext">CSV, JSON, TXT - Max 10MB</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        uploaded_file = st.file_uploader(
-            "Choisir un fichier",
-            type=['csv', 'json', 'txt'],
-            label_visibility="collapsed"
-        )
-        
-        if uploaded_file is not None:
-            # Traitement du fichier
-            file_details = {"filename": uploaded_file.name, "filetype": uploaded_file.type, "filesize": uploaded_file.size}
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": f"📁 Fichier '{uploaded_file.name}' importé avec succès ! Je peux maintenant analyser ces données. Que voulez-vous savoir ?"
-            })
-            st.session_state.show_upload = False
-            st.experimental_rerun()
-    
-    # Zone de conversation
-    st.markdown('<div class="conversation-area">', unsafe_allow_html=True)
-    
-    # Affichage des messages
-    if not st.session_state.messages:
-        st.markdown(f"""
-        <div class="empty-state">
-            <span class="icon">💭import streamlit as st
+import streamlit as st
 import pandas as pd
 import time
 import random
@@ -129,10 +13,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS Ultra-Épuré Steve Jobs Style
+# CSS simplifié et corrigé
 st.markdown("""
 <style>
-    /* Reset et base */
     .main {
         background: #000000;
         color: white;
@@ -148,19 +31,17 @@ st.markdown("""
         max-width: 100% !important;
     }
     
-    /* Container principal centré - sizing amélioré */
     .main-interface {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        min-height: 100vh;
+        min-height: 800px;
         max-width: 900px;
         margin: 0 auto;
         padding: 60px 40px 40px 40px;
     }
     
-    /* Logo VidMind épuré - sizing optimisé */
     .logo {
         font-size: 52px;
         font-weight: 200;
@@ -179,7 +60,6 @@ st.markdown("""
         letter-spacing: 2px;
     }
     
-    /* Zone de conversation épurée - sizing étendu */
     .conversation-area {
         width: 100%;
         max-width: 800px;
@@ -191,7 +71,6 @@ st.markdown("""
         padding: 0 20px;
     }
     
-    /* Messages utilisateur - sizing amélioré */
     .user-message {
         background: rgba(255, 255, 255, 0.06);
         border-radius: 22px 22px 6px 22px;
@@ -203,7 +82,6 @@ st.markdown("""
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     }
     
-    /* Messages IA - sizing amélioré */
     .ai-message {
         background: transparent;
         padding: 24px 0;
@@ -225,7 +103,16 @@ st.markdown("""
         text-transform: uppercase;
     }
     
-    /* Sélecteur de vidéo minimaliste - avec miniatures */
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
     .video-selector {
         width: 100%;
         margin-bottom: 35px;
@@ -285,11 +172,6 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(255, 215, 0, 0.15);
     }
     
-    .video-pill:hover::before {
-        background: linear-gradient(135deg, rgba(255, 215, 0, 0.5), rgba(255, 255, 255, 0.2));
-        border-color: rgba(255, 215, 0, 0.6);
-    }
-    
     .video-pill.active {
         background: rgba(255, 215, 0, 0.18);
         border-color: #FFD700;
@@ -297,12 +179,6 @@ st.markdown("""
         box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2);
     }
     
-    .video-pill.active::before {
-        background: linear-gradient(135deg, #FFD700, rgba(255, 215, 0, 0.6));
-        border-color: #FFD700;
-    }
-    
-    /* Zone d'options étendues */
     .options-section {
         width: 100%;
         max-width: 800px;
@@ -313,34 +189,6 @@ st.markdown("""
         flex-wrap: wrap;
     }
     
-    .option-button {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 10px 18px;
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.7);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        backdrop-filter: blur(5px);
-    }
-    
-    .option-button:hover {
-        background: rgba(255, 215, 0, 0.1);
-        border-color: rgba(255, 215, 0, 0.3);
-        color: rgba(255, 215, 0, 0.9);
-        transform: translateY(-2px);
-    }
-    
-    .option-icon {
-        font-size: 14px;
-        opacity: 0.8;
-    }
-    
-    /* Input zone ultra-épurée - sizing étendu */
     .input-zone {
         width: 100%;
         max-width: 800px;
@@ -374,31 +222,6 @@ st.markdown("""
         font-weight: 300;
     }
     
-    .send-button {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: linear-gradient(135deg, #FFD700, #FFA500);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 16px;
-        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-    }
-    
-    .send-button:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 4px 16px rgba(255, 215, 0, 0.5);
-    }
-    
-    /* Upload zone élégante */
     .upload-zone {
         width: 100%;
         max-width: 800px;
@@ -418,29 +241,22 @@ st.markdown("""
         animation: fadeInUp 0.3s ease-out;
     }
     
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     .upload-zone:hover {
         border-color: rgba(255, 215, 0, 0.3);
         background: rgba(255, 215, 0, 0.02);
     }
     
-    .upload-icon {
-        font-size: 32px;
-        color: rgba(255, 255, 255, 0.3);
-        margin-bottom: 10px;
-    }
-    
-    .upload-text {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 14px;
-        margin-bottom: 8px;
-    }
-    
-    .upload-subtext {
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 12px;
-    }
-    
-    /* Suggestions épurées - sizing optimisé */
     .suggestions {
         margin-top: 25px;
         text-align: center;
@@ -455,34 +271,42 @@ st.markdown("""
         font-weight: 300;
     }
     
-    .suggestion-pills {
+    .thinking-indicator {
         display: flex;
-        justify-content: center;
-        gap: 12px;
-        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 215, 0, 0.8);
+        font-size: 14px;
+        margin: 20px 0;
+        animation: pulse 2s ease-in-out infinite;
     }
     
-    .suggestion-pill {
-        background: rgba(255, 255, 255, 0.025);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 18px;
-        padding: 8px 16px;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.6);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-        backdrop-filter: blur(3px);
+    .thinking-dots {
+        display: flex;
+        gap: 4px;
     }
     
-    .suggestion-pill:hover {
-        background: rgba(255, 215, 0, 0.08);
-        border-color: rgba(255, 215, 0, 0.25);
-        color: rgba(255, 215, 0, 0.9);
-        transform: translateY(-2px);
+    .thinking-dot {
+        width: 4px;
+        height: 4px;
+        background: #FFD700;
+        border-radius: 50%;
+        animation: dotPulse 1.4s ease-in-out infinite both;
     }
     
-    /* Messages vides élégants - sizing amélioré */
+    .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+    .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+    
+    @keyframes dotPulse {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+    
     .empty-state {
         text-align: center;
         color: rgba(255, 255, 255, 0.4);
@@ -500,7 +324,10 @@ st.markdown("""
         opacity: 0.25;
     }
     
-    /* Mode compact pour mobile - amélioré */
+    .stDeployButton {display: none;}
+    header[data-testid="stHeader"] {display: none;}
+    .stAppViewContainer > .main .block-container {padding-top: 0;}
+    
     @media (max-width: 768px) {
         .logo {
             font-size: 40px;
@@ -525,24 +352,6 @@ st.markdown("""
             margin-right: 5%;
             padding: 20px 0;
             padding-left: 20px;
-        }
-        
-        .video-pills {
-            gap: 10px;
-        }
-        
-        .video-pill {
-            font-size: 13px;
-            padding: 10px 16px;
-        }
-        
-        .main-input {
-            padding: 16px 60px 16px 24px;
-        }
-        
-        .send-button {
-            width: 36px;
-            height: 36px;
         }
     }
 </style>
@@ -622,19 +431,21 @@ def main():
         st.session_state.messages = []
     if "selected_video" not in st.session_state:
         st.session_state.selected_video = "Général"
+    if "show_upload" not in st.session_state:
+        st.session_state.show_upload = False
     
     videos = load_videos()
     
-    # Sélecteur de vidéo épuré
+    # Sélecteur de vidéo épuré avec miniatures
     st.markdown("""
     <div class="video-selector">
-        <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">
+        <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 15px;">
             Contexte de conversation
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Pills de sélection vidéo
+    # Pills de sélection vidéo avec miniatures
     cols = st.columns(len(videos))
     for i, video in enumerate(videos):
         with cols[i]:
@@ -644,11 +455,59 @@ def main():
                 help=video["title"]
             ):
                 st.session_state.selected_video = video["title"]
-                # Ajouter message de contexte
-                st.session_state.messages.append({
-                    "role": "system",
-                    "content": f"Contexte changé vers : {video['title']}"
-                })
+    
+    # Options étendues
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("📁 Importer fichier", key="import_file"):
+            st.session_state.show_upload = not st.session_state.show_upload
+    
+    with col2:
+        if st.button("📊 Analytics", key="analytics"):
+            st.info("📈 Analytics détaillées bientôt disponibles")
+    
+    with col3:
+        if st.button("🎯 Suggestions", key="suggestions"):
+            suggestions_text = "🎯 Suggestions pour améliorer votre contenu :\n• Plus d'exemples pratiques\n• Créer une série sur TypeScript\n• Répondre aux questions en attente"
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": suggestions_text
+            })
+            st.experimental_rerun()
+    
+    with col4:
+        if st.button("💡 Insights", key="insights"):
+            insights_text = "💡 Insights de votre audience :\n• Niveau technique : Intermédiaire-Avancé (67%)\n• Plateforme préférée : Desktop (78%)\n• Moment d'activité : 18h-22h\n• Sujets demandés : TypeScript, Testing, DevOps"
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": insights_text
+            })
+            st.experimental_rerun()
+    
+    # Zone d'upload conditionnelle
+    if st.session_state.show_upload:
+        st.markdown("""
+        <div class="upload-zone active">
+            <div style="font-size: 32px; color: rgba(255,255,255,0.3); margin-bottom: 10px;">📤</div>
+            <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 8px;">Glissez vos fichiers ici ou cliquez pour sélectionner</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 12px;">CSV, JSON, TXT - Max 10MB</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        uploaded_file = st.file_uploader(
+            "Choisir un fichier",
+            type=['csv', 'json', 'txt'],
+            label_visibility="collapsed"
+        )
+        
+        if uploaded_file is not None:
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": f"📁 Fichier '{uploaded_file.name}' importé avec succès ! Je peux maintenant analyser ces données. Que voulez-vous savoir ?"
+            })
+            st.session_state.show_upload = False
+            st.experimental_rerun()
     
     # Zone de conversation
     st.markdown('<div class="conversation-area">', unsafe_allow_html=True)
@@ -681,17 +540,12 @@ def main():
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Zone d'input principale
-    st.markdown('<div class="input-zone">', unsafe_allow_html=True)
-    
-    # Input avec gestion des événements
     user_input = st.text_input(
         "",
         placeholder=f"Que voulez-vous savoir sur {st.session_state.selected_video} ?",
         key="main_input",
         label_visibility="collapsed"
     )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
     
     # Traitement de l'input
     if user_input and user_input.strip():
@@ -735,14 +589,7 @@ def main():
     
     current_suggestions = suggestions.get(st.session_state.selected_video, suggestions["Général"])
     
-    if not st.session_state.messages:  # Afficher seulement si pas de conversation
-        st.markdown(f"""
-        <div class="suggestions">
-            <div class="suggestions-label">Questions suggérées pour {st.session_state.selected_video}</div>
-            <div class="suggestion-pills">
-        """, unsafe_allow_html=True)
-        
-        # Créer les boutons de suggestion
+    if not st.session_state.messages:
         cols_sug = st.columns(len(current_suggestions))
         for i, suggestion in enumerate(current_suggestions):
             with cols_sug[i]:
@@ -751,23 +598,19 @@ def main():
                         "role": "user",
                         "content": suggestion
                     })
-                    # Générer réponse immédiate
                     ai_response = generate_smart_response(suggestion, st.session_state.selected_video)
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": ai_response
                     })
                     st.experimental_rerun()
-        
-        st.markdown('</div></div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Sidebar minimaliste pour analytics rapides
+    # Sidebar minimaliste
     with st.sidebar:
         st.markdown("### 📊 Aperçu Rapide")
         
-        # Métriques en temps réel
         col1, col2 = st.columns(2)
         with col1:
             st.metric("Nouveaux", "3", "+1")
@@ -778,17 +621,12 @@ def main():
         
         st.markdown("---")
         
-        # Actions rapides
         if st.button("🔍 Analytics Complètes"):
             st.info("📈 Dashboard complet bientôt disponible")
         
         if st.button("📧 Exporter Insights"):
             st.success("📤 Rapport exporté vers votre email")
         
-        if st.button("⚙️ Paramètres"):
-            st.info("🛠️ Configuration avancée en développement")
-        
-        # Statut en temps réel
         st.markdown("### 🔴 Statut Live")
         st.markdown("""
         <div style="color: #4CAF50; font-size: 12px;">
