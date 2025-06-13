@@ -1,81 +1,4 @@
-def show_ai_chat(videos, comments):
-    st.markdown("## 🤖 Chat avec l'IA VidMind")
-    
-    # Sélection de vidéo pour le contexte
-    video_titles = [f"{v['title']}" for v in videos]
-    selected_video = st.selectbox("🎥 Sélectionner une vidéo pour le contexte:", video_titles)
-    
-    st.markdown("### 💬 Conversation")
-    
-    # Initialiser l'historique de chat
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-    
-    # Zone de chat
-    chat_container = st.container()
-    
-    with chat_container:
-        for i, message in enumerate(st.session_state.chat_history):
-            if message["role"] == "user":
-                st.markdown(f"""
-                <div style="text-align: right; margin: 10px 0;">
-                    <div style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 15px 15px 5px 15px; display: inline-block; max-width: 70%;">
-                        {message["content"]}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                <div style="text-align: left; margin: 10px 0;">
-                    <div style="background: rgba(255,215,0,0.1); border-left: 3px solid #FFD700; padding: 10px 15px; border-radius: 5px 15px 15px 15px; display: inline-block; max-width: 85%;">
-                        <strong>🤖 VidMind:</strong><br>
-                        {message["content"]}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-    
-    # Input utilisateur
-    user_input = st.text_input("💭 Posez votre question...", key="user_input")
-    
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("📤 Envoyer") and user_input:
-            # Ajouter message utilisateur
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
-            
-            # Simuler la réponse IA
-            with st.spinner("🤖 VidMind réfléchit..."):
-                time.sleep(1.5)
-                
-                # Générer une réponse contextuelle
-                if "sentiment" in user_input.lower():
-                    ai_response = "Basé sur l'analyse des commentaires de cette vidéo, le sentiment est **positif à 89%** ! 😊 Les viewers apprécient particulièrement vos explications claires. J'ai détecté 3 questions techniques qui mériteraient une réponse."
-                elif "question" in user_input.lower():
-                    ai_response = "J'ai identifié **5 questions techniques** qui nécessitent votre attention :<br><br>• **@TechGuru**: 'Comment optimiser les re-renders avec useMemo ?'<br>• **@ReactNewbie**: 'Peut-on utiliser plusieurs useState dans un composant ?'<br><br>Ces questions ont reçu plusieurs likes, indiquant un intérêt général."
-                elif "prochaine" in user_input.lower():
-                    ai_response = "Basé sur les demandes récurrentes, votre prochaine vidéo devrait couvrir :<br><br>🎯 **Sujets les plus demandés:**<br>• Promises et async/await avancé (12 mentions)<br>• Design patterns en JavaScript (8 mentions)<br>• Optimisation et performance (6 mentions)"
-                else:
-                    ai_response = f"Excellente question ! Basé sur l'analyse de vos commentaires pour '{selected_video}', je peux vous dire que votre audience est très engagée. Voulez-vous que je détaille un aspect particulier ?"
-                
-                st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-            
-            st.rerun()
-    
-    # Suggestions de questions
-    st.markdown("### 💡 Questions Suggérées")
-    suggestions = [
-        "Que pensent les gens de cette vidéo ?",
-        "Quelles questions sont en attente ?", 
-        "Quel devrait être le sujet de ma prochaine vidéo ?",
-        "Comment améliorer mes prochaines vidéos ?"
-    ]
-    
-    cols = st.columns(2)
-    for i, suggestion in enumerate(suggestions):
-        with cols[i % 2]:
-            if st.button(suggestion, key=f"suggestion_{i}"):
-                st.session_state.chat_history.append({"role": "user", "content": suggestion})
-                st.rerun()import streamlit as st
+import streamlit as st
 import pandas as pd
 import time
 import random
@@ -95,61 +18,129 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main {
-        background-color: #000000;
+        background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
         color: white;
     }
     
     .stApp {
-        background-color: #000000;
+        background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+    }
+    
+    .main-container {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px 0;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .video-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
-        margin: 10px 0;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 25px;
+        margin: 15px 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .video-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(255, 215, 0, 0.15);
+        border-color: rgba(255, 215, 0, 0.3);
     }
     
     .comment-card {
-        background: rgba(255, 255, 255, 0.03);
-        border-left: 3px solid #FFD700;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border-left: 4px solid #FFD700;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 15px 0;
+        transition: all 0.3s ease;
     }
     
     .insight-metric {
-        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 235, 59, 0.05));
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 8px;
-        padding: 15px;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 235, 59, 0.03) 100%);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        border-radius: 16px;
+        padding: 25px;
         text-align: center;
+        transition: all 0.3s ease;
     }
     
     .ai-response {
-        background: rgba(30, 30, 30, 0.8);
-        border-left: 3px solid #FFD700;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.06) 0%, rgba(30, 30, 30, 0.8) 100%);
+        border-left: 4px solid #FFD700;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 15px 0;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     h1, h2, h3 {
         color: #FFD700 !important;
+        font-weight: 300 !important;
+    }
+    
+    .main-title {
+        text-align: center;
+        font-size: 3.5em !important;
+        font-weight: 200 !important;
+        letter-spacing: 12px;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+    
+    .subtitle {
+        text-align: center;
+        color: rgba(255,255,255,0.6);
+        font-size: 1.3em;
+        font-weight: 300;
+        letter-spacing: 2px;
+        margin-bottom: 40px;
     }
     
     .stButton button {
-        background: linear-gradient(135deg, #FFD700, #FFA000);
-        color: black;
-        border: none;
-        border-radius: 20px;
-        font-weight: 600;
+        background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+        color: black !important;
+        border: none !important;
+        border-radius: 25px !important;
+        font-weight: 600 !important;
+        padding: 12px 30px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
     }
     
-    .stSelectbox label {
+    .stButton button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4) !important;
+    }
+    
+    .stSelectbox label, .stTextInput label {
         color: #FFD700 !important;
+        font-weight: 500 !important;
+    }
+    
+    .stTextInput input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+        padding: 15px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -188,7 +179,7 @@ def load_sample_data():
         {
             "video_id": 1,
             "author": "Sarah_Dev92",
-            "text": "Super vidéo ! Mais j'ai une question sur les closures, comment ça marche exactement avec les variables ? J'ai du mal à comprendre pourquoi la variable reste accessible même après la fin de la fonction parent. 🤔",
+            "text": "Super vidéo ! Mais j'ai une question sur les closures, comment ça marche exactement avec les variables ?",
             "minutes_ago": 5,
             "type": "question",
             "urgency": "high"
@@ -196,7 +187,7 @@ def load_sample_data():
         {
             "video_id": 2,
             "author": "DevPro_Official", 
-            "text": "Merci pour cette explication claire ! Ça m'a beaucoup aidé pour mon projet React. Grâce à toi j'ai enfin compris useState et useEffect. Tu as un don pour expliquer simplement ! 🙏",
+            "text": "Merci pour cette explication claire ! Ça m'a beaucoup aidé pour mon projet React.",
             "minutes_ago": 12,
             "type": "thanks",
             "urgency": "low"
@@ -204,7 +195,7 @@ def load_sample_data():
         {
             "video_id": 3,
             "author": "TechNinja_Dev",
-            "text": "Excellent tuto sur CSS Grid ! Est-ce que tu peux faire une vidéo sur Flexbox vs Grid ? Je ne sais jamais quand utiliser quoi dans mes projets. Ce serait top d'avoir une comparaison pratique ! 💪",
+            "text": "Excellent tuto sur CSS Grid ! Est-ce que tu peux faire une vidéo sur Flexbox vs Grid ?",
             "minutes_ago": 18,
             "type": "suggestion", 
             "urgency": "medium"
@@ -215,37 +206,16 @@ def load_sample_data():
 
 # Fonction pour générer des réponses IA
 def generate_ai_response(comment_text, tone="professional"):
-    responses = {
-        "professional": {
-            "closures": "Excellente question ! Les closures permettent à une fonction d'accéder aux variables de son scope parent même après que ce scope soit fermé. En gros, la fonction 'capture' l'environnement dans lequel elle a été créée. Je prépare justement une vidéo dédiée aux closures avec des exemples concrets ! 🚀",
-            "thanks": "Avec grand plaisir ! 😊 Ça me fait vraiment plaisir de savoir que ça t'a aidé pour ton projet. N'hésite pas si tu as d'autres questions !",
-            "suggestion": "Excellente idée ! Flexbox vs Grid, c'est un classique mais tellement important. Je note ça dans ma liste pour les prochaines vidéos ! 📝"
-        },
-        "friendly": {
-            "closures": "Hey ! Super question 😊 Alors les closures c'est comme si une fonction gardait un 'souvenir' de où elle a été créée. Même quand le contexte original disparaît, elle peut encore accéder aux variables ! C'est magique non ? 🪄",
-            "thanks": "Awww merci beaucoup ! 🥰 Ça me fait chaud au cœur ! Continue comme ça pour ton projet, tu vas cartonner ! 💪",
-            "suggestion": "Ooh excellente idée ! 💡 Je pense souvent à faire cette comparaison justement. Je vais creuser ça très bientôt ! Merci pour l'inspi ! ✨"
-        },
-        "expert": {
-            "closures": "Les closures sont un concept fondamental en JavaScript. Techniquement, une closure est formée quand une fonction interne référence des variables de sa fonction externe. Le moteur JS maintient une référence vers l'environnement lexical même après l'exécution de la fonction externe.",
-            "thanks": "Content que le contenu soit utile pour votre implémentation. Les hooks React nécessitent effectivement une approche méthodique pour être maîtrisés correctement.",
-            "suggestion": "Pertinente observation. Flexbox excelle pour les composants unidimensionnels tandis que Grid est optimal pour les layouts bidimensionnels. Une analyse comparative détaillée serait effectivement valuable."
-        }
-    }
-    
-    # Simple matching based on keywords
     if "closure" in comment_text.lower():
-        return responses[tone]["closures"]
-    elif "merci" in comment_text.lower() or "aidé" in comment_text.lower():
-        return responses[tone]["thanks"] 
-    elif "vidéo" in comment_text.lower() and "?" in comment_text:
-        return responses[tone]["suggestion"]
+        return "Excellente question ! Les closures permettent à une fonction d'accéder aux variables de son scope parent même après que ce scope soit fermé. Je prépare justement une vidéo dédiée aux closures ! 🚀"
+    elif "merci" in comment_text.lower():
+        return "Avec grand plaisir ! 😊 Ça me fait vraiment plaisir de savoir que ça t'a aidé pour ton projet."
     else:
-        return responses[tone]["thanks"]  # default
+        return "Excellente suggestion ! Je note ça dans ma liste pour les prochaines vidéos ! 📝"
 
 # Interface principale
 def main():
-    # Header avec logo ultra-moderne
+    # Header avec logo
     st.markdown("""
     <div class="main-container">
         <h1 class="main-title">VIDMIND</h1>
@@ -253,7 +223,7 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # Navigation moderne en onglets
+    # Navigation en onglets
     tab1, tab2, tab3, tab4 = st.tabs(["🏠 Dashboard", "💬 Commentaires", "📊 Analytics", "🤖 Chat IA"])
     
     videos, comments = load_sample_data()
@@ -312,111 +282,84 @@ def show_dashboard(videos, comments):
     st.markdown("### 🎥 Vos Vidéos Récentes")
     
     for video in videos:
-        with st.container():
-            col1, col2 = st.columns([3, 1])
-            
-            with col1:
-                st.markdown(f"""
-                <div class="video-card">
-                    <h4>📹 {video['title']}</h4>
-                    <p>👁️ {video['views']} vues • 💬 {video['comments_count']} commentaires • 📅 Il y a {video['days_ago']} jours</p>
-                    <div style="background: rgba(255,215,0,0.2); padding: 5px 10px; border-radius: 15px; display: inline-block; margin-top: 10px;">
-                        <small>🎯 Engagement: {video['engagement']}%</small>
-                    </div>
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            st.markdown(f"""
+            <div class="video-card">
+                <h4>📹 {video['title']}</h4>
+                <p>👁️ {video['views']} vues • 💬 {video['comments_count']} commentaires • 📅 Il y a {video['days_ago']} jours</p>
+                <div style="background: rgba(255,215,0,0.2); padding: 5px 10px; border-radius: 15px; display: inline-block; margin-top: 10px;">
+                    <small>🎯 Engagement: {video['engagement']}%</small>
                 </div>
-                """, unsafe_allow_html=True)
-            
-            with col2:
-                if st.button(f"💬 Analyser", key=f"analyze_{video['id']}"):
-                    st.session_state.selected_video = video['id']
-                    st.rerun()
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            if st.button(f"💬 Analyser", key=f"analyze_{video['id']}"):
+                st.info(f"Analyse de '{video['title']}' en cours...")
 
 def show_comments_management(videos, comments):
     st.markdown("## 💬 Gestion des Commentaires")
     
-    # Filtres
-    col1, col2 = st.columns(2)
-    with col1:
-        urgency_filter = st.selectbox("🚨 Urgence", ["Tous", "High", "Medium", "Low"])
-    with col2:
-        type_filter = st.selectbox("📝 Type", ["Tous", "Question", "Thanks", "Suggestion"])
-    
     # Affichage des commentaires
     for comment in comments:
-        # Appliquer les filtres
-        if urgency_filter != "Tous" and comment['urgency'].lower() != urgency_filter.lower():
-            continue
-        if type_filter != "Tous" and comment['type'].lower() != type_filter.lower():
-            continue
-            
         video = next(v for v in videos if v['id'] == comment['video_id'])
         
-        with st.container():
-            # Header du commentaire avec info vidéo
-            st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <small style="color: #FFD700;">📹 {video['title']}</small>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Commentaire principal
-            urgency_color = {"high": "#FF4444", "medium": "#FFA500", "low": "#4CAF50"}
-            st.markdown(f"""
-            <div class="comment-card" style="border-left-color: {urgency_color[comment['urgency']]};">
-                <strong>@{comment['author']}</strong> a écrit il y a {comment['minutes_ago']} min:
-                <br><br>
-                "{comment['text']}"
-                <br><br>
-                <span style="background: {urgency_color[comment['urgency']]}20; padding: 3px 8px; border-radius: 10px; font-size: 0.8em;">
-                    {comment['type'].upper()} • {comment['urgency'].upper()}
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Actions
-            col1, col2, col3 = st.columns([2, 2, 1])
-            
-            with col1:
-                if st.button(f"✨ Répondre avec IA", key=f"ai_reply_{comment['author']}"):
-                    with st.spinner("🤖 Génération de la réponse..."):
-                        time.sleep(1.5)  # Simulation du processing
-                        
-                        # Sélection du ton
-                        tone = st.selectbox("🎭 Choisir le ton:", ["professional", "friendly", "expert"], key=f"tone_{comment['author']}")
-                        
-                        response = generate_ai_response(comment['text'], tone)
-                        
-                        st.markdown(f"""
-                        <div class="ai-response">
-                            <strong>🤖 Réponse générée ({tone}):</strong><br><br>
-                            {response}
-                            <br><br>
-                            <small>🎯 Prédiction engagement: +85%</small>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        col_a, col_b = st.columns(2)
-                        with col_a:
-                            if st.button("📤 Publier sur YouTube", key=f"publish_{comment['author']}"):
-                                st.success("✅ Réponse publiée avec succès !")
-                        with col_b:
-                            if st.button("✏️ Modifier", key=f"edit_{comment['author']}"):
-                                st.info("🔧 Fonctionnalité d'édition bientôt disponible")
-            
-            with col2:
-                if st.button(f"⏰ Plus tard", key=f"later_{comment['author']}"):
-                    st.info("📝 Ajouté à votre liste TODO")
-            
-            with col3:
-                if st.button(f"✅ Lu", key=f"read_{comment['author']}"):
-                    st.success("👁️ Marqué comme lu")
-            
-            st.markdown("---")
+        # Header du commentaire
+        st.markdown(f"""
+        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <small style="color: #FFD700;">📹 {video['title']}</small>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Commentaire principal
+        urgency_colors = {"high": "#FF4444", "medium": "#FFA500", "low": "#4CAF50"}
+        st.markdown(f"""
+        <div class="comment-card" style="border-left-color: {urgency_colors[comment['urgency']]};">
+            <strong>@{comment['author']}</strong> a écrit il y a {comment['minutes_ago']} min:
+            <br><br>
+            "{comment['text']}"
+            <br><br>
+            <span style="background: {urgency_colors[comment['urgency']]}20; padding: 3px 8px; border-radius: 10px; font-size: 0.8em;">
+                {comment['type'].upper()} • {comment['urgency'].upper()}
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Actions
+        col1, col2, col3 = st.columns([2, 2, 1])
+        
+        with col1:
+            if st.button(f"✨ Répondre avec IA", key=f"ai_reply_{comment['author']}"):
+                with st.spinner("🤖 Génération de la réponse..."):
+                    time.sleep(1.5)
+                    response = generate_ai_response(comment['text'])
+                    
+                    st.markdown(f"""
+                    <div class="ai-response">
+                        <strong>🤖 Réponse générée :</strong><br><br>
+                        {response}
+                        <br><br>
+                        <small>🎯 Prédiction engagement: +85%</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if st.button("📤 Publier sur YouTube", key=f"publish_{comment['author']}"):
+                        st.success("✅ Réponse publiée avec succès !")
+        
+        with col2:
+            if st.button(f"⏰ Plus tard", key=f"later_{comment['author']}"):
+                st.info("📝 Ajouté à votre liste TODO")
+        
+        with col3:
+            if st.button(f"✅ Lu", key=f"read_{comment['author']}"):
+                st.success("👁️ Marqué comme lu")
 
 def show_analytics(videos, comments):
     st.markdown("## 📊 Analytics Créateur")
     
-    # Graphique sentiment dans le temps
+    # Graphique sentiment
     dates = [(datetime.now() - timedelta(days=x)) for x in range(7, 0, -1)]
     sentiment_scores = [88, 91, 85, 92, 89, 94, 92]
     
@@ -433,31 +376,13 @@ def show_analytics(videos, comments):
     )
     st.plotly_chart(fig_sentiment, use_container_width=True)
     
-    # Répartition des types de commentaires
-    comment_types = ["Questions", "Remerciements", "Suggestions", "Critiques"]
-    type_counts = [45, 30, 20, 5]
-    
-    fig_types = px.pie(
-        values=type_counts,
-        names=comment_types,
-        title="🥧 Répartition des Types de Commentaires",
-        color_discrete_sequence=["#FFD700", "#FFA500", "#FF6B35", "#FF4444"]
-    )
-    fig_types.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font_color='white'
-    )
-    st.plotly_chart(fig_types, use_container_width=True)
-    
-    # Recommandations IA
+    # Recommandations
     st.markdown("### 🎯 Recommandations IA")
-    
     recommendations = [
-        "🚀 **Prochaine vidéo suggérée**: 'Promises et async/await avancé' (12 demandes récurrentes)",
-        "⚡ **Pic d'activité**: Vos vidéos React génèrent +47% d'engagement vs JavaScript vanilla",
-        "💡 **Insight caché**: Sarah_Dev92 et TechNinja_Dev posent souvent des questions techniques - potentiels ambassadeurs",
-        "📈 **Tendance**: Votre audience devient plus avancée techniquement (+23% questions complexes)"
+        "🚀 **Prochaine vidéo suggérée**: 'Promises et async/await avancé' (12 demandes)",
+        "📈 **Tendance**: Vos vidéos React génèrent +47% d'engagement",
+        "💡 **Insight**: Sarah_Dev92 pose souvent des questions techniques",
+        "🎯 **Optimisation**: Votre audience devient plus avancée (+23%)"
     ]
     
     for rec in recommendations:
@@ -470,67 +395,60 @@ def show_analytics(videos, comments):
 def show_ai_chat(videos, comments):
     st.markdown("## 🤖 Chat avec l'IA VidMind")
     
-    # Sélection de vidéo pour le contexte
+    # Sélection de vidéo
     video_titles = [f"{v['title']}" for v in videos]
     selected_video = st.selectbox("🎥 Sélectionner une vidéo pour le contexte:", video_titles)
     
     st.markdown("### 💬 Conversation")
     
-    # Initialiser l'historique de chat
+    # Initialiser l'historique
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     
-    # Zone de chat
-    chat_container = st.container()
-    
-    with chat_container:
-        for i, message in enumerate(st.session_state.chat_history):
-            if message["role"] == "user":
-                st.markdown(f"""
-                <div style="text-align: right; margin: 10px 0;">
-                    <div style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 15px 15px 5px 15px; display: inline-block; max-width: 70%;">
-                        {message["content"]}
-                    </div>
+    # Afficher l'historique
+    for message in st.session_state.chat_history:
+        if message["role"] == "user":
+            st.markdown(f"""
+            <div style="text-align: right; margin: 10px 0;">
+                <div style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 15px 15px 5px 15px; display: inline-block; max-width: 70%;">
+                    {message["content"]}
                 </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                <div style="text-align: left; margin: 10px 0;">
-                    <div style="background: rgba(255,215,0,0.1); border-left: 3px solid #FFD700; padding: 10px 15px; border-radius: 5px 15px 15px 15px; display: inline-block; max-width: 85%;">
-                        <strong>🤖 VidMind:</strong><br>
-                        {message["content"]}
-                    </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="text-align: left; margin: 10px 0;">
+                <div style="background: rgba(255,215,0,0.1); border-left: 3px solid #FFD700; padding: 10px 15px; border-radius: 5px 15px 15px 15px; display: inline-block; max-width: 85%;">
+                    <strong>🤖 VidMind:</strong><br>
+                    {message["content"]}
                 </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
     
     # Input utilisateur
     user_input = st.text_input("💭 Posez votre question...", key="user_input")
     
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("📤 Envoyer") and user_input:
-            # Ajouter message utilisateur
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
+    if st.button("📤 Envoyer") and user_input:
+        # Ajouter message utilisateur
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        
+        # Simuler réponse IA
+        with st.spinner("🤖 VidMind réfléchit..."):
+            time.sleep(1.5)
             
-            # Simuler la réponse IA
-            with st.spinner("🤖 VidMind réfléchit..."):
-                time.sleep(1.5)
-                
-                # Générer une réponse contextuelle
-                if "sentiment" in user_input.lower():
-                    ai_response = "Basé sur l'analyse des commentaires de cette vidéo, le sentiment est **positif à 89%** ! 😊 Les viewers apprécient particulièrement vos explications claires. J'ai détecté 3 questions techniques qui mériteraient une réponse."
-                elif "question" in user_input.lower():
-                    ai_response = "J'ai identifié **5 questions techniques** qui nécessitent votre attention :<br><br>• **@TechGuru**: 'Comment optimiser les re-renders avec useMemo ?'<br>• **@ReactNewbie**: 'Peut-on utiliser plusieurs useState dans un composant ?'<br><br>Ces questions ont reçu plusieurs likes, indiquant un intérêt général."
-                elif "prochaine" in user_input.lower():
-                    ai_response = "Basé sur les demandes récurrentes, votre prochaine vidéo devrait couvrir :<br><br>🎯 **Sujets les plus demandés:**<br>• Promises et async/await avancé (12 mentions)<br>• Design patterns en JavaScript (8 mentions)<br>• Optimisation et performance (6 mentions)"
-                else:
-                    ai_response = f"Excellente question ! Basé sur l'analyse de vos commentaires pour '{selected_video}', je peux vous dire que votre audience est très engagée. Voulez-vous que je détaille un aspect particulier ?"
-                
-                st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+            if "sentiment" in user_input.lower():
+                ai_response = "Basé sur l'analyse des commentaires, le sentiment est **positif à 89%** ! 😊 Les viewers apprécient vos explications claires."
+            elif "question" in user_input.lower():
+                ai_response = "J'ai identifié **5 questions techniques** qui nécessitent votre attention. Les plus urgentes concernent les closures et useState."
+            else:
+                ai_response = f"Excellente question ! Basé sur l'analyse de '{selected_video}', votre audience est très engagée. Voulez-vous que je détaille un aspect particulier ?"
             
-            st.rerun()
+            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+        
+        # Recharger la page pour afficher les nouveaux messages
+        st.experimental_rerun()
     
-    # Suggestions de questions
+    # Suggestions
     st.markdown("### 💡 Questions Suggérées")
     suggestions = [
         "Que pensent les gens de cette vidéo ?",
@@ -544,7 +462,7 @@ def show_ai_chat(videos, comments):
         with cols[i % 2]:
             if st.button(suggestion, key=f"suggestion_{i}"):
                 st.session_state.chat_history.append({"role": "user", "content": suggestion})
-                st.rerun()
+                st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
