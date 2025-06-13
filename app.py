@@ -257,7 +257,7 @@ def show_dashboard(videos, comments):
             with col2:
                 if st.button(f"💬 Analyser", key=f"analyze_{video['id']}"):
                     st.session_state.selected_video = video['id']
-                    st.experimental_rerun()
+                    st.rerun()
 
 def show_comments_management(videos, comments):
     st.markdown("## 💬 Gestion des Commentaires")
@@ -456,7 +456,7 @@ def show_ai_chat(videos, comments):
                 
                 st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
             
-            st.experimental_rerun()
+            st.rerun()
     
     # Suggestions de questions
     st.markdown("### 💡 Questions Suggérées")
@@ -472,7 +472,7 @@ def show_ai_chat(videos, comments):
         with cols[i % 2]:
             if st.button(suggestion, key=f"suggestion_{i}"):
                 st.session_state.chat_history.append({"role": "user", "content": suggestion})
-                st.experimental_rerun()
+                st.rerun()
 
 if __name__ == "__main__":
     main()
